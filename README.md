@@ -17,7 +17,7 @@ Abre una terminal tipo Linux.
 Hacemos un copia del repositorio escribiendo en la terminal asi:
 
 ```
-git clone https://github.com/michaelRS2002/Proyecto-Shell-Remoto
+git clone https://github.com/frankydv12v/Proyecto-Shell-Remoto.git
 ```
 
 Abrimos la carpeta y revisamos que se hayan guardado todos los archivos asi

@@ -20,20 +20,13 @@
 void manejo_comando_edit(int clientSocket, const char *filename) {
     // Envía el mensaje al cliente
     TCP_Write_String(clientSocket, "Puedes editar el archivo con nano");
-    // Ejecuta nano en el servidor
-    pid_t child_pid = fork();
-    if (child_pid == 0) {
-        execlp("/bin/sh", "/bin/sh", "-c", "nano", filename, NULL);
-        perror("Error al intentar ejecutar nano");
-        exit(EXIT_FAILURE);
-    } else if (child_pid > 0) {
-        // Espera a que el proceso hijo termine antes de continuar
-        waitpid(child_pid, NULL, 0);
-    } else {
-        perror("Error al intentar crear un nuevo proceso");
-    }
+    // Ejecuta nano en el cliente y espera a que termine
+     char response[MAX_RESPONSE_LENGTH];
+     TCP_Read_String(clientSocket, response, MAX_RESPONSE_LENGTH);
+     if (strcmp(response, "Edicion terminada") == 0){
     // Envía la marca de fin de respuesta al cliente
-    TCP_Write_String(clientSocket, "$");
+    	TCP_Write_String(clientSocket, "$");
+     }
 }
 
 

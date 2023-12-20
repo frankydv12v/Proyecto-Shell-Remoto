@@ -79,7 +79,7 @@ gcc -o cliente cliente.c tcp.c leercadena.c
 [!IMPORTANTE] Ejecutamos siempre de primero el servidor
 
 ```
-./Servidor 
+./servidor 
 ```
 ```
 ./cliente servidor 12348 
@@ -109,7 +109,7 @@ cd servidor
 gcc -o servidor servidor.c tcp.c leercadena.c
 ```
 ```
-./Servidor 
+./servidor 
 ```
 Cliente:
 ```

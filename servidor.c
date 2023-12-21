@@ -69,30 +69,50 @@ int main()
     }
 }
     if (strncmp(command, "edit", 4) == 0) {
-            char *filename = strchr(command, ' ');
-            if (filename != NULL) {
-                filename++; // Avanzar al siguiente carácter después del espacio
-                printf("Archivo a editar: %s\n", filename);
-		manejo_comando_edit(clientSocket,filename);
-            }
-    }    
-     if (strncmp(command, "delete", 4) == 0) {
-            char *filename = strchr(command, ' ');
-            if (filename != NULL) {
-                filename++; // Avanzar al siguiente carácter después del espacio
-                printf("Archivo a borrar: %s\n", filename);
-                if (access(filename, F_OK) != -1) {
-                    // El archivo existe, se borra
-                    if (remove(filename) == 0) {
-                      printf("El archivo '%s' ha sido borrado.\n", filename);
-                      TCP_Write_String(clientSocket, "El Archivo ha sido borrado.");
-                    } else {
-                     printf("No se pudo borrar el archivo '%s'.\n", filename);
-                     TCP_Write_String(clientSocket, "No se pudo borrar el archivo."); 
-                    }
-               }
-            }
+    char *filename = strchr(command, ' ');
+    if (filename != NULL) {
+        filename++; // Avanzar al nombre del archivo después del espacio
+
+        // Enviar la señal de que se puede editar
+        TCP_Write_String(clientSocket, "Puedes editar el archivo");
+
+        // Leer el contenido del archivo desde el cliente
+        char contenido[MAX_RESPONSE_LENGTH];
+        TCP_Read_String(clientSocket, contenido, MAX_RESPONSE_LENGTH);
+
+        // Guardar el contenido en el archivo
+        FILE *archivo = fopen(filename, "w");
+        if (archivo != NULL) {
+            fprintf(archivo, "%s", contenido);
+            fclose(archivo);
+            // Enviar la marca de fin de respuesta
+            TCP_Write_String(clientSocket, "$");
+        } else {
+            // Enviar mensaje de error al cliente
+            TCP_Write_String(clientSocket, "Error al editar el archivo");
+        }
+        continue;
     }
+}
+
+    if (strncmp(command, "delete", 6) == 0) {
+    char *filename = strchr(command, ' ');
+    if (filename != NULL) {
+        filename++; // Avanzar al nombre del archivo después del espacio
+
+        // Borrar el archivo
+        if (remove(filename) == 0) {
+            printf("El archivo %s ha sido borrado.\n", filename);
+            // Enviar la señal de que el archivo ha sido borrado
+            TCP_Write_String(clientSocket, "El Archivo ha sido borrado.");
+        } else {
+            printf("No se pudo borrar el archivo %s.\n", filename);
+            // Enviar mensaje de error al cliente
+            TCP_Write_String(clientSocket, "No se pudo borrar el archivo.");
+        }
+        continue;
+    }
+}
     pid_t pid = fork();
 
     if (pid == 0)

@@ -82,9 +82,9 @@ int main(int argc, char *argv[])
         }
       }
     }
-    if (strncmp(comando, "edit", 4) == 0) { // Si el comando comienza con "edit "
+    if (strncmp(comando, "edit", 4) == 0) {
     char *filename = strchr(comando, ' ');
-      if (filename != NULL) {
+    if (filename != NULL) {
         filename++; // Avanzar al nombre del archivo después del espacio
 
         // Enviar el nombre del archivo al servidor
@@ -94,52 +94,45 @@ int main(int argc, char *argv[])
         char response[MAX_RESPONSE_LENGTH];
         TCP_Read_String(clientSocket, response, MAX_RESPONSE_LENGTH);
 
-        // Si el servidor envía la señal para editar con nano
-        if (strcmp(response, "Puedes editar el archivo con nano") == 0) {
-            char comandoEdit[100];
-            sprintf(comandoEdit, "nano %s", filename);
-            pid_t pid = fork();
-            if (pid == 0) {
-                // Proceso hijo: ejecutar nano
-                system(comandoEdit);
-                exit(0);
-            } else if (pid > 0) {
-                // Proceso padre: esperar a que el hijo termine
-                waitpid(pid, NULL, 0);
-                // Informar al servidor que la edición ha terminado
-                TCP_Write_String(clientSocket, "Edicion terminada");
-                continue;
-            } else {
-                // Ocurrió un error al intentar crear el proceso hijo
-                printf("Error al crear el proceso hijo.\n");
-            }
+        // Si el servidor envía la señal para editar
+        if (strcmp(response, "Puedes editar el archivo") == 0) {
+            printf("Editando el archivo %s...\n", filename);
+            printf("Escribe el contenido del archivo. Termina con una línea que contenga solo '.'\n");
+
+            char contenido[MAX_RESPONSE_LENGTH];
+            // Leer el contenido del archivo desde la entrada estándar
+            leer_de_teclado(MAX_RESPONSE_LENGTH, contenido);
+
+            // Enviar el contenido al servidor
+            TCP_Write_String(clientSocket, contenido);
+            continue;
         }
-      }
     }
-    if (strncmp(comando, "delete", 6) == 0) { // Si el comando comienza con "delete "
+}
+
+if (strncmp(comando, "delete", 6) == 0) {
     char *filename = strchr(comando, ' ');
-      if (filename != NULL) {
+    if (filename != NULL) {
         filename++; // Avanzar al nombre del archivo después del espacio
 
         // Enviar el nombre del archivo al servidor
         TCP_Write_String(clientSocket, filename);
-        printf("Borrar archivo: %s\n", filename);
+        printf("Borrando archivo: %s\n", filename);
 
         char response[MAX_RESPONSE_LENGTH];
         TCP_Read_String(clientSocket, response, MAX_RESPONSE_LENGTH);
 
-        // Si el servidor envía la señal para editar con nano
+        // Si el servidor envía la señal de borrado
         if (strcmp(response, "El Archivo ha sido borrado.") == 0) {
-            // Abrir nano para editar el archivo recibido directamente
-            printf("El archivo %s\n ha sido borrado del servidor.\n", filename);
+            printf("El archivo %s ha sido borrado del servidor.\n", filename);
             continue;
         }
-        if(strcmp(response,"No se pudo borrar el archivo.") == 0){
-          printf("El archivo %s\n no ha podido ser borrado.\n", filename);
-          continue;
+        if(strcmp(response, "No se pudo borrar el archivo.") == 0) {
+            printf("No se pudo borrar el archivo %s.\n", filename);
+            continue;
         }
-      }
     }
+}
     
 
     char response[MAX_RESPONSE_LENGTH];
